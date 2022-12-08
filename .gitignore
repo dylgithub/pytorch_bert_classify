@@ -1,0 +1,5 @@
+# .gitignore
+.idea
+albert_chinese_tiny/pytorch_model.bin
+models/best_model.pkl
+rbt3/pytorch_model.bin
