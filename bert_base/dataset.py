@@ -1,8 +1,5 @@
 # coding: utf-8
 # @File: dataset.py
-# @Author: HE D.H.
-# @Email: victor-he@qq.com
-# @Time: 2021/12/09 11:01:32
 # @Description:
 
 import torch
@@ -16,7 +13,7 @@ from tqdm import tqdm
 class CNewsDataset(Dataset):
     def __init__(self, filename):
         # 数据集初始化
-        self.tokenizer = BertTokenizer.from_pretrained('rbt3')
+        self.tokenizer = BertTokenizer.from_pretrained('../rbt3')
         self.input_ids = []
         self.token_type_ids = []
         self.attention_mask = []
@@ -45,4 +42,4 @@ class CNewsDataset(Dataset):
 
 
 if __name__ == '__main__':
-    cd = CNewsDataset("THUCNews/data/train.txt")
+    cd = CNewsDataset("../THUCNews/data/train.txt")

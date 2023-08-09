@@ -6,7 +6,7 @@
 # @Description:
 
 import torch
-from model import BertClassifier
+from bert_base.model import BertClassifier
 from transformers import BertTokenizer, BertConfig
 
 

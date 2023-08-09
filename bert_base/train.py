@@ -1,8 +1,5 @@
 # coding: utf-8
 # @File: train.py
-# @Author: HE D.H.
-# @Email: victor-he@qq.com
-# @Time: 2020/10/10 17:14:07
 # @Description:
 
 import os
@@ -10,50 +7,45 @@ import torch
 import torch.nn as nn
 from transformers import BertConfig
 from torch.utils.data import DataLoader
-from model import BertClassifier
-from dataset import CNewsDataset
+from bert_base.model import BertClassifier
+from bert_base.dataset import CNewsDataset
 from tqdm import tqdm
+from bert_base.config import Config
 
 
 def main():
     # 参数设置
-    batch_size = 64
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    epochs = 5
-    learning_rate = 5e-6  # Learning Rate不宜太大
-
+    config = Config()
     # 获取到dataset
-    train_dataset = CNewsDataset('THUCNews/data/train.txt')
-    valid_dataset = CNewsDataset('THUCNews/data/dev.txt')
+    train_dataset = CNewsDataset(config.train_data_location)
+    valid_dataset = CNewsDataset(config.eval_data_location)
     # test_dataset = CNewsDataset('THUCNews/data/test.txt')
 
     # 生成Batch
-    # train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    valid_dataloader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
+    train_dataloader = DataLoader(train_dataset, batch_size=config.train_batch_size, shuffle=True)
+    valid_dataloader = DataLoader(valid_dataset, batch_size=config.eval_batch_size, shuffle=False)
     # test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     # 读取BERT的配置文件
-    bert_config = BertConfig.from_pretrained('rbt3')
-    num_labels = 8
+    bert_config = BertConfig.from_pretrained('../rbt3')
 
     # 初始化模型
-    model = BertClassifier(bert_config, num_labels).to(device)
+    model = BertClassifier(bert_config, config.num_labels).to(device)
 
     # 优化器
     # optimizer = AdamW(model.parameters(), lr=learning_rate)
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
 
     # 损失函数
     criterion = nn.CrossEntropyLoss()
 
     best_acc = 0
 
-    for epoch in range(1, epochs + 1):
+    for epoch in range(1, config.epochs + 1):
         losses = 0  # 损失
         accuracy = 0  # 准确率
-
         model.train()
-        train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
         train_bar = tqdm(train_dataloader, ncols=100)
         for input_ids, token_type_ids, attention_mask, label_id in train_bar:
             # 梯度清零
@@ -112,8 +104,8 @@ def main():
 
         print('\tValid ACC:', average_acc, '\tLoss:', average_loss)
 
-        if not os.path.exists('models'):
-            os.makedirs('models')
+        if not os.path.exists('../models'):
+            os.makedirs('../models')
 
         # 判断并保存验证集上表现最好的模型
         if average_acc > best_acc:

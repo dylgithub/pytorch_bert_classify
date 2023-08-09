@@ -1,11 +1,8 @@
 # coding: utf-8
 # @File: model.py
-# @Author: HE D.H.
-# @Email: victor-he@qq.com
-# @Time: 2020/10/10 17:12:56
 # @Description:
 
-import torch
+
 import torch.nn as nn
 from transformers import BertModel
 
@@ -15,7 +12,7 @@ class BertClassifier(nn.Module):
     def __init__(self, bert_config, num_labels):
         super().__init__()
         # 定义BERT模型
-        self.bert = BertModel.from_pretrained("rbt3")
+        self.bert = BertModel.from_pretrained("../rbt3")
         # 定义分类器
         self.classifier = nn.Linear(bert_config.hidden_size, num_labels)
 
