@@ -110,8 +110,9 @@ def main():
         # 判断并保存验证集上表现最好的模型
         if average_acc > best_acc:
             best_acc = average_acc
-            torch.save(model.state_dict(), 'models/best_model.pkl')
+            torch.save(model.state_dict(), '../models/best_model.pkl')
 
 
 if __name__ == '__main__':
+    # Valid ACC: 0.947 	Loss: 0.1618787732720375
     main()
