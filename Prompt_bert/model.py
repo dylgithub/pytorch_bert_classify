@@ -18,5 +18,4 @@ class BertClassifier(nn.Module):
         # BERT的输出
         bert_output = self.bert(input_ids=input_ids, attention_mask=attention_mask, token_type_ids=token_type_ids,
                                 labels=label_id)
-        # (batch_size, seq_len, vocab_size)
         return bert_output

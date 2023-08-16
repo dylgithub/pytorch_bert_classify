@@ -59,13 +59,12 @@ def main():
                 token_type_ids=token_type_ids.long().to(device),
                 label_id=label_id.long().to(device),
             )
+            # (batch_size, seq_len, vocab_size)
             logits = output.logits
-            # 计算loss
+            # 获取loss
             loss = output.loss
             losses += loss.item()
             mask_position_index = torch.tensor(input_ids) == tokenizer.mask_token_id
-            # print(mask_pp.shape, logits.shape)
-            # print(mask_pp[0])
             predict_logits = logits[mask_position_index].reshape(logits.size(0), -1, logits.size(-1))
             true_label_id = label_id[mask_position_index].reshape(logits.size(0), -1).cpu().numpy()
             predict_label_id = torch.argmax(predict_logits, dim=-1).detach().cpu().numpy()
@@ -74,16 +73,10 @@ def main():
                 if set(true_label) == set(predict_label_id[index]):
                     count += 1
             acc = count / len(predict_label_id)
-            #
-            #     pred_labels = torch.argmax(output, dim=1)  # 预测出的label
-            #     acc = torch.sum(pred_labels == label_id.to(device)).item() / len(pred_labels)  # acc
             accuracy += acc
-            #
             loss.backward()
             optimizer.step()
             train_bar.set_postfix(loss=loss.item(), acc=acc)
-            # train_bar.set_postfix(loss=loss.item())
-        #
         average_loss = losses / len(train_dataloader)
         average_acc = accuracy / len(train_dataloader)
 
@@ -104,13 +97,12 @@ def main():
                     token_type_ids=token_type_ids.long().to(device),
                     label_id=label_id.long().to(device),
                 )
+                # (batch_size, seq_len, vocab_size)
                 logits = output.logits
                 # 计算loss
                 loss = output.loss
                 losses += loss.item()
                 mask_position_index = torch.tensor(input_ids) == tokenizer.mask_token_id
-                # print(mask_pp.shape, logits.shape)
-                # print(mask_pp[0])
                 predict_logits = logits[mask_position_index].reshape(logits.size(0), -1, logits.size(-1))
                 true_label_id = label_id[mask_position_index].reshape(logits.size(0), -1).cpu().numpy()
                 predict_label_id = torch.argmax(predict_logits, dim=-1).detach().cpu().numpy()
@@ -119,17 +111,7 @@ def main():
                     if set(true_label) == set(predict_label_id[index]):
                         count += 1
                 acc = count / len(predict_label_id)
-                #
-                #     pred_labels = torch.argmax(output, dim=1)  # 预测出的label
-                #     acc = torch.sum(pred_labels == label_id.to(device)).item() / len(pred_labels)  # acc
                 accuracy += acc
-                # loss = criterion(output, label_id.to(device))
-                # losses += loss.item()
-                #
-                # pred_labels = torch.argmax(output, dim=1)  # 预测出的label
-                # acc = torch.sum(pred_labels == label_id.to(device)).item() / len(pred_labels)  # acc
-                # accuracy += acc
-                # valid_bar.set_postfix(loss=loss.item(), acc=acc)
 
             average_loss = losses / len(valid_dataloader)
             average_acc = accuracy / len(valid_dataloader)

@@ -6,5 +6,5 @@ class Config():
         self.num_labels = 8
         self.train_batch_size = 64
         self.eval_batch_size = 64
-        self.epochs = 5
+        self.epochs = 10
         self.learning_rate = 5e-6  # Learning Rate不宜太大
