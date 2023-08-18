@@ -25,6 +25,7 @@ class Prompt:
             text_token['labels'] = np.array(
                 tokenizer(examples['label'], padding=True, truncation=True, max_length=max_len)[
                     "input_ids"])
+            print(text_token['labels'])
             return text_token
 
         data_dataset = data_dataset.map(preprocess_function, batched=True)
@@ -75,8 +76,11 @@ if __name__ == '__main__':
     prompt = Prompt()
     tokenizer, model = prompt.build_model('rbt3')
     train_texts, train_labels = prompt.data_process("THUCNews/data/dev.txt")
-    test_texts, test_labels = prompt.data_process("THUCNews/data/test.txt")
+    print(train_texts)
+    print(train_labels)
+    # test_texts, test_labels = prompt.data_process("THUCNews/data/test.txt")
     train_dataset = prompt.build_dataset(train_texts, train_labels, tokenizer, 40)
-    test_dataset = prompt.build_dataset(test_texts, test_labels, tokenizer, 40)
-    trainer = prompt.build_trainer(model, train_dataset, test_dataset, "prompt_checkpoint", 1e-5, 64, 3)
-    trainer.train()
+    print(train_dataset)
+    # test_dataset = prompt.build_dataset(test_texts, test_labels, tokenizer, 40)
+    # trainer = prompt.build_trainer(model, train_dataset, test_dataset, "prompt_checkpoint", 1e-5, 64, 3)
+    # trainer.train()
