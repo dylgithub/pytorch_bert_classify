@@ -128,5 +128,5 @@ def main():
 
 
 if __name__ == '__main__':
-    # Valid ACC: 0.947 	Loss: 0.1618787732720375
+    # Valid ACC: 0.927
     main()
