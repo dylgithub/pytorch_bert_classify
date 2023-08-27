@@ -8,4 +8,6 @@ class Config():
         self.eval_batch_size = 64
         self.epochs = 5
         self.warmup_proportion = 0.1
+        self.smooth_rate = 0.5
+        self.temp_rate = 1.0
         self.learning_rate = 5e-6  # Learning Rate不宜太大

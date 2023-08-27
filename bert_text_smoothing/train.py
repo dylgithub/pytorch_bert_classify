@@ -5,12 +5,12 @@
 import os
 import torch
 import torch.nn as nn
-from transformers import BertConfig, get_linear_schedule_with_warmup
+from transformers import BertConfig, get_linear_schedule_with_warmup, BertForMaskedLM
 from torch.utils.data import DataLoader
-from bert_base.model import BertClassifier
-from bert_base.dataset import CNewsDataset
+from model import BertClassifier
+from dataset import CNewsDataset
 from tqdm import tqdm
-from bert_base.config import Config
+from config import Config
 
 
 def main():
@@ -34,6 +34,7 @@ def main():
 
     # 初始化模型
     model = BertClassifier(bert_config, config.num_labels).to(device)
+    smooth_model = BertForMaskedLM.from_pretrained('../rbt3').to(device)
     param_optimizer = list(model.named_parameters())
     no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
     optimizer_grouped_parameters = [
@@ -45,8 +46,8 @@ def main():
     # 优化器
     # optimizer = AdamW(model.parameters(), lr=learning_rate)
     optimizer = torch.optim.Adam(optimizer_grouped_parameters, lr=config.learning_rate)
-    # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=int(config.warmup_proportion * total_steps),
-    #                                             num_training_steps=total_steps)
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=int(config.warmup_proportion * total_steps),
+                                                num_training_steps=total_steps)
     # 损失函数
     criterion = nn.CrossEntropyLoss()
 
@@ -80,7 +81,33 @@ def main():
 
             loss.backward()
             optimizer.step()
-            # scheduler.step()
+            scheduler.step()
+
+            input_smooth = {'input_ids': input_ids.long().to(device),
+                            'attention_mask': attention_mask.long().to(device),
+                            'token_type_ids': token_type_ids.long().to(device),
+                            }
+            input_probs = smooth_model(
+                **input_smooth
+            )
+
+            word_embeddings = model.get_input_embeddings().to(device)
+            one_hot = torch.zeros_like(input_probs[0]).scatter_(2, input_ids.reshape(input_ids.shape[0], input_ids.shape[1], 1).long().to(device), 1.0).to(device)
+
+            now_probs = config.smooth_rate * (torch.nn.functional.softmax(input_probs[0] / config.temp_rate).to(device)) + (
+                        1 - config.smooth_rate) * one_hot  # 4 2 0.5 0.25
+            inputs_embeds_smooth = now_probs @ word_embeddings.weight
+            smooth_output = model(
+                inputs_embeds=inputs_embeds_smooth,
+                attention_mask=attention_mask.long().to(device),
+                token_type_ids=token_type_ids.long().to(device),
+            )
+            # 计算loss
+            smooth_loss = criterion(smooth_output, label_id.to(device))
+            smooth_loss.backward()
+            optimizer.step()
+            scheduler.step()
+
             train_bar.set_postfix(loss=loss.item(), acc=acc)
 
         average_loss = losses / len(train_dataloader)
