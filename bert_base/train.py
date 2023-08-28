@@ -35,6 +35,7 @@ def main():
     # 初始化模型
     model = BertClassifier(bert_config, config.num_labels).to(device)
     param_optimizer = list(model.named_parameters())
+    # 加这个效果会下降
     no_decay = ['bias', 'LayerNorm.bias', 'LayerNorm.weight']
     optimizer_grouped_parameters = [
         {'params': [p for n, p in param_optimizer if not any(
@@ -44,7 +45,8 @@ def main():
     ]
     # 优化器
     # optimizer = AdamW(model.parameters(), lr=learning_rate)
-    optimizer = torch.optim.Adam(optimizer_grouped_parameters, lr=config.learning_rate)
+    # optimizer = torch.optim.Adam(optimizer_grouped_parameters, lr=config.learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
     # scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=int(config.warmup_proportion * total_steps),
     #                                             num_training_steps=total_steps)
     # 损失函数
